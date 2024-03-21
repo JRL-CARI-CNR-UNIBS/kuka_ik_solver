@@ -1,0 +1,9 @@
+<library path="kuka_ik_solver">
+  <class name="ik_solver/KukaIkSolver"
+         type="ik_solver::KukaIkSolver"
+         base_class_type="ik_solver::IkSolver">
+    <description>
+      OPW kinematics-based IK solver
+    </description>
+  </class>
+</library>
