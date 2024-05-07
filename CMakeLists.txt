@@ -37,7 +37,7 @@ install(DIRECTORY config
         DESTINATION share/${PROJECT_NAME})
 
 ament_export_targets(export_${PROJECT_NAME} export_${PROJECT_NAME})
-ament_export_dependencies(${PROJECT_NAME} pluginlib ik_solver)
+ament_export_dependencies(${PROJECT_NAME} pluginlib ik_solver opw_kinematics)
 
 # Testing
 if(BUILD_TESTING)
