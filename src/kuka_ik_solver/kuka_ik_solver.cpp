@@ -28,16 +28,21 @@ Solutions KukaIkSolver::getIk(const Eigen::Affine3d& T_base_flange, const Config
   opw_sols = opw_kinematics::inverse(opw_params_, T_base_flange_iso);
 
   sols.configurations().reserve(8);
+
+  Configurations conf;
+
+
+
   for(auto& sol : opw_sols)
   {
     if(opw_kinematics::isValid(sol))
     {
       // un po' ridondante il crea-distruggi
-      sols.configurations().emplace_back(Eigen::VectorXd{{sol.at(0), sol.at(1), sol.at(2), sol.at(3), sol.at(4), sol.at(5)}});
-      std::vector<int> out_of_bound = outOfBound(sols.configurations().back(), ub_, lb_);
+      conf.push_back(Eigen::VectorXd{{sol.at(0), sol.at(1), sol.at(2), sol.at(3), sol.at(4), sol.at(5)}});
+      std::vector<int> out_of_bound = outOfBound(conf.back(), ub_, lb_);
       if (std::find(out_of_bound.begin(), out_of_bound.end(), 0) != out_of_bound.end())
       {
-        sols.configurations().pop_back();
+        conf.pop_back();
       }
     }
     else
@@ -45,6 +50,10 @@ Solutions KukaIkSolver::getIk(const Eigen::Affine3d& T_base_flange, const Config
       continue;
     }
   }
+
+  sols.configurations()=getMultiplicity(conf,ub_,lb_,revolute_);
+//  sols.configurations()=conf;
+
 //  std::remove_if(sols.configurations().begin(), sols.configurations().end(), [](const auto& el){
 //    return std::isnan(el.norm());
 //  });
@@ -53,6 +62,15 @@ Solutions KukaIkSolver::getIk(const Eigen::Affine3d& T_base_flange, const Config
   sols.rotation_residuals().resize(sols.configurations().size());
   std::fill(sols.translation_residuals().begin(), sols.translation_residuals().end(), std::numeric_limits<double>::epsilon());
   std::fill(sols.rotation_residuals().begin(), sols.rotation_residuals().end(), std::numeric_limits<double>::epsilon());
+
+  for (size_t idx=0;idx<sols.configurations().size();idx++)
+  {
+      Eigen::Affine3d T_base_flange_iso_cal=getFK(sols.configurations().at(idx));
+      sols.translation_residuals().at(idx)=(T_base_flange_iso.translation()-T_base_flange_iso_cal.translation()).norm();
+      Eigen::AngleAxisd aa;
+      aa=T_base_flange.linear().inverse()*T_base_flange_iso_cal.linear();
+      sols.rotation_residuals().at(idx)=aa.angle();
+  }
 
   if(int num = sols.configurations().size() != 0)
     sols.message() = std::to_string(num) + " solutions found";

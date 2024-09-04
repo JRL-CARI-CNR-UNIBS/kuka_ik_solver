@@ -2,7 +2,7 @@
 #define KUKA_IK_SOLVER_HPP
 
 #include <memory>
-#include <ik_solver_core/ik_solver_base_class.h>
+#include <ik_solver/ik_solver.hpp>
 #include <opw_kinematics/opw_parameters.h>
 
 // #define TOLERANCE 1e-3
